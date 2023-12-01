@@ -19,7 +19,8 @@
                             class="fa-solid fa-triangle-exclamation"></i> Warnung</h5>
                 </div>
                 <div class="modal-body">
-                    <p>Diese Website benutzt Daten von <a href="https://cleveron.ch/" target="_blank">Cleveron <sup><i class="fa-solid fa-up-right-from-square"></i></sup></a></p>
+                    <p>Diese Website benutzt Daten von <a href="https://cleveron.ch/" target="_blank">Cleveron <sup><i
+                                    class="fa-solid fa-up-right-from-square"></i></sup></a></p>
                     <p>Diese Website ist <b>KEIN</b> Produkt von Cleveron</p>
                     <p>Alle Inhalte stehen in keinster Weise in Zusammenhang mit Cleveron</p>
                 </div>
@@ -46,42 +47,47 @@
         </div>
     </nav>
     <div class="container mt-4">
-        <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 20px; justify-content: center;"
-            id="tempDisplayFlex">
+        <div id="tempDisplayFlex">
         </div>
     </div>
     <script>
-        let flex = document.getElementById("tempDisplayFlex");
-        let rooms = [
-            "16722a0d-d1da-45c7-a530-d7c1b67aa3db",
-            "3567ac2d-31a7-414e-b9ae-a245ae24499a"
-        ]
-        rooms.forEach(element => {
-            fetch("https://server.cleveron.ch/api/functions/getRoomReportData", {
-                method: "POST",
-                body: JSON.stringify({
-                    "roomUuid": element,
-                    "_ApplicationId": "NjSUT8HxvCz706ldcwUn"
-                })
+        fetch("/devices.json")
+            .then(response => response.json())
+            .then(data => {
+                for (const key in data) {
+                    document.getElementById("tempDisplayFlex").innerHTML += `<h3>${key}</h3>`
+                    let cardContainer = document.createElement("div");
+                    cardContainer.innerHTML = ``;
+
+                    data[key].forEach(element => {
+                        fetch("https://server.cleveron.ch/api/functions/getRoomReportData", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                "roomUuid": element,
+                                "_ApplicationId": "NjSUT8HxvCz706ldcwUn"
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                cardContainer.innerHTML += `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex" style="flex-direction: row; height: 100%;">
+                                            <div style="display: flex; justify-content: center; height: 100%; flex-direction: column; font-size: 2rem; margin-right: 20px; font-weight: bold;">
+                                                ${data.result.roomName}
+                                            </div>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><i class="fa-solid fa-droplet-percent" style="color: #dc3545;"></i> ${Math.round(data.result.avgHumLastHour)}%</li>
+                                                <li class="list-group-item"><i class="fa-solid fa-temperature-three-quarters" style="color: #0d6efd;"></i> ${Math.round(data.result.avgTempLastHour)}°</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>`
+                            })
+                    });
+                    document.getElementById("tempDisplayFlex").appendChild(cardContainer);
+                }
             })
-                .then(response => response.json())
-                .then(data => {
-                    flex.innerHTML += `
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex" style="flex-direction: row; height: 100%;">
-                                <div style="display: flex; justify-content: center; height: 100%; flex-direction: column; font-size: 2rem; margin-right: 20px; font-weight: bold;">
-                                    ${data.result.roomName}
-                                </div>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fa-solid fa-droplet-percent" style="color: #dc3545;"></i> ${Math.round(data.result.avgHumLastHour)}%</li>
-                                    <li class="list-group-item"><i class="fa-solid fa-temperature-three-quarters" style="color: #0d6efd;"></i> ${Math.round(data.result.avgTempLastHour)}°</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>`
-                })
-        });
     </script>
     <style>
         * {
