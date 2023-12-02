@@ -59,7 +59,7 @@
             return summe / number_list.length;
         }
 
-        fetch("/devices.json")
+        fetch("/willitemp/devices.json")
             .then(response => response.json())
             .then(data => {
                 for (const key in data) {
