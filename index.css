@@ -1,0 +1,30 @@
+* {
+    font-family: Arial;
+}
+
+.warning-modal-header {
+    color: red;
+    font-weight: bold;
+}
+
+.link-cleveron {
+    text-decoration: none;
+}
+
+.room-name {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    flex-direction: column;
+    font-size: 2rem;
+    margin-right: 20px;
+    font-weight: bold;
+}
+
+.room-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: left;
+}
