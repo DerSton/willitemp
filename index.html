@@ -6,23 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.5.0/css/all.css">
+    <link rel="stylesheet" href="/index.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <title>Willitemp</title>
+    <script src="/index.js"></script>
+    <title>WilliTemp</title>
 </head>
 
 <body>
-    <div class="modal" id="warningModal">
+    <div class="modal" name="warning">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" style="color: red; font-weight: bold;"><i
-                            class="fa-solid fa-triangle-exclamation"></i> Warnung</h5>
+                    <h5 class="modal-title warning-modal-header">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Warnung
+                    </h5>
                 </div>
                 <div class="modal-body">
-                    <p>Diese Website benutzt Daten von <a href="https://cleveron.ch/" target="_blank">Cleveron <sup><i
-                                    class="fa-solid fa-up-right-from-square"></i></sup></a></p>
-                    <p>Diese Website ist <b>KEIN</b> Produkt von Cleveron</p>
-                    <p>Alle Inhalte stehen in keinster Weise in Zusammenhang mit Cleveron</p>
+                    <p>Diese Website benutzt Daten von <span name="cleveron"></span></p>
+                    <p>Diese Website ist <b>KEIN</b> Produkt von <span name="cleveron"></p>
+                    <p>Alle Inhalte stehen in keinster Weise in Zusammenhang mit <span name="cleveron"></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Verstanden</button>
@@ -30,97 +33,19 @@
             </div>
         </div>
     </div>
-    <script>
-        const myModal = new bootstrap.Modal(document.getElementById('warningModal'), {
-            keyboard: false,
-            backdrop: "static",
-            focus: true
-        });
-        myModal.show();
-    </script>
-
-
 
     <nav class="navbar bg-body-tertiary">
         <div class="container">
-            <span class="navbar-brand mb-0 h1"><i style="color: #007ac0;" class="fa-solid fa-temperature-snow"></i> Willitemp</span>
+            <span class="navbar-brand mb-0 h1">
+                <i style="color: #007ac0;" class="fa-solid fa-temperature-snow"></i>
+                WilliTemp
+            </span>
         </div>
     </nav>
     <div class="container">
-        <div id="tempDisplayFlex">
+        <div id="groupListDisplay">
         </div>
     </div>
-    <script>
-        function calculateAverage(number_list) {
-            let summe = 0
-            for (let i = 0; i < number_list.length; i++) {
-                summe += number_list[i];
-            }
-            return summe / number_list.length;
-        }
-
-        fetch("/willitemp/devices.json")
-            .then(response => response.json())
-            .then(data => {
-                for (const key in data) {
-                    const keyHeading = document.createElement('h3');
-                    keyHeading.classList = "mt-4"
-                    keyHeading.style = "font-weight: bold;"
-                    document.getElementById("tempDisplayFlex").appendChild(keyHeading);
-
-                    const cardContainer = document.createElement("div");
-                    cardContainer.style = `display: flex; flex-direction: row; flex-wrap: wrap; gap: 20px; justify-content: left;`;
-
-                    let temps = [];
-                    let humids = [];
-                    let promises = [];
-
-                    data[key].forEach(element => {
-                        let promise = fetch("https://server.cleveron.ch/api/functions/getRoomReportData", {
-                            method: "POST",
-                            body: JSON.stringify({
-                                "roomUuid": element,
-                                "_ApplicationId": "NjSUT8HxvCz706ldcwUn"
-                            })
-                        })
-                            .then(response => response.json())
-                            .then(room_data => {
-                                const card = document.createElement('div');
-                                temps.push(room_data.result.avgTempLastHour);
-                                humids.push(room_data.result.avgHumLastHour);
-                                card.className = 'card';
-                                card.innerHTML = `
-                                <div class="card-body" room-id="${element}">
-                                    <div class="d-flex" style="flex-direction: row; height: 100%;">
-                                        <div style="display: flex; justify-content: center; height: 100%; flex-direction: column; font-size: 2rem; margin-right: 20px; font-weight: bold;">
-                                            ${room_data.result.roomName}
-                                        </div>
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item"><span class="badge bg-primary"><i class="fa-solid fa-droplet-percent" style="color: #ffffff;"></i> ${Math.round(room_data.result.avgHumLastHour, 2)}%</span></li>
-                                            <li class="list-group-item"><span class="badge bg-danger"><i class="fa-solid fa-temperature-three-quarters" style="color: #ffffff;"></i> ${Math.round(room_data.result.avgTempLastHour, 2)}°</span></li>
-                                        </ul>
-                                    </div>
-                                </div>`
-
-                                cardContainer.appendChild(card);
-                            });
-                            promises.push(promise);
-                    });
-                    document.getElementById("tempDisplayFlex").appendChild(cardContainer);
-                    Promise.all(promises).then(() => {
-                        let avgTemps = calculateAverage(temps);
-                        let avgHumids = calculateAverage(humids);
-                        keyHeading.innerHTML = `${key} <span style="font-size: 1rem;" class="badge bg-danger"><i class="fa-solid fa-temperature-three-quarters" style="color: #ffffff;"></i> ${Math.round(avgTemps)}°</span> <span style="font-size: 1rem;" class="badge bg-primary"><i class="fa-solid fa-droplet-percent" style="color: #ffffff;"></i> ${Math.round(avgHumids)}%</span>`;
-                        console.log(avgHumids, avgTemps)
-                    });
-                }
-            });
-    </script>
-    <style>
-        * {
-            font-family: Arial;
-        }
-    </style>
 </body>
 
 </html>
