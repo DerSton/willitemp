@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     // display temps
     const groupListDisplay = document.getElementById("groupListDisplay");
-    fetch("/devices.json")
+    fetch("/willitemp/devices.json")
         .then(response => response.json())
         .then(data => {
             for (const group in data) {
