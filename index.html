@@ -42,25 +42,41 @@
 
 
     <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Willitemp</span>
+        <div class="container">
+            <span class="navbar-brand mb-0 h1"><i style="color: #007ac0;" class="fa-solid fa-temperature-snow"></i> Willitemp</span>
         </div>
     </nav>
-    <div class="container mt-4">
+    <div class="container">
         <div id="tempDisplayFlex">
         </div>
     </div>
     <script>
+        function calculateAverage(number_list) {
+            let summe = 0
+            for (let i = 0; i < number_list.length; i++) {
+                summe += number_list[i];
+            }
+            return summe / number_list.length;
+        }
+
         fetch("/devices.json")
             .then(response => response.json())
             .then(data => {
                 for (const key in data) {
-                    document.getElementById("tempDisplayFlex").innerHTML += `<h3>${key}</h3>`
-                    let cardContainer = document.createElement("div");
-                    cardContainer.innerHTML = ``;
+                    const keyHeading = document.createElement('h3');
+                    keyHeading.classList = "mt-4"
+                    keyHeading.style = "font-weight: bold;"
+                    document.getElementById("tempDisplayFlex").appendChild(keyHeading);
+
+                    const cardContainer = document.createElement("div");
+                    cardContainer.style = `display: flex; flex-direction: row; flex-wrap: wrap; gap: 20px; justify-content: left;`;
+
+                    let temps = [];
+                    let humids = [];
+                    let promises = [];
 
                     data[key].forEach(element => {
-                        fetch("https://server.cleveron.ch/api/functions/getRoomReportData", {
+                        let promise = fetch("https://server.cleveron.ch/api/functions/getRoomReportData", {
                             method: "POST",
                             body: JSON.stringify({
                                 "roomUuid": element,
@@ -68,30 +84,41 @@
                             })
                         })
                             .then(response => response.json())
-                            .then(data => {
-                                cardContainer.innerHTML += `
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex" style="flex-direction: row; height: 100%;">
-                                            <div style="display: flex; justify-content: center; height: 100%; flex-direction: column; font-size: 2rem; margin-right: 20px; font-weight: bold;">
-                                                ${data.result.roomName}
-                                            </div>
-                                            <ul class="list-group list-group-flush">
-                                                <li class="list-group-item"><i class="fa-solid fa-droplet-percent" style="color: #dc3545;"></i> ${Math.round(data.result.avgHumLastHour)}%</li>
-                                                <li class="list-group-item"><i class="fa-solid fa-temperature-three-quarters" style="color: #0d6efd;"></i> ${Math.round(data.result.avgTempLastHour)}°</li>
-                                            </ul>
+                            .then(room_data => {
+                                const card = document.createElement('div');
+                                temps.push(room_data.result.avgTempLastHour);
+                                humids.push(room_data.result.avgHumLastHour);
+                                card.className = 'card';
+                                card.innerHTML = `
+                                <div class="card-body" room-id="${element}">
+                                    <div class="d-flex" style="flex-direction: row; height: 100%;">
+                                        <div style="display: flex; justify-content: center; height: 100%; flex-direction: column; font-size: 2rem; margin-right: 20px; font-weight: bold;">
+                                            ${room_data.result.roomName}
                                         </div>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><span class="badge bg-primary"><i class="fa-solid fa-droplet-percent" style="color: #ffffff;"></i> ${Math.round(room_data.result.avgHumLastHour, 2)}%</span></li>
+                                            <li class="list-group-item"><span class="badge bg-danger"><i class="fa-solid fa-temperature-three-quarters" style="color: #ffffff;"></i> ${Math.round(room_data.result.avgTempLastHour, 2)}°</span></li>
+                                        </ul>
                                     </div>
                                 </div>`
-                            })
+
+                                cardContainer.appendChild(card);
+                            });
+                            promises.push(promise);
                     });
                     document.getElementById("tempDisplayFlex").appendChild(cardContainer);
+                    Promise.all(promises).then(() => {
+                        let avgTemps = calculateAverage(temps);
+                        let avgHumids = calculateAverage(humids);
+                        keyHeading.innerHTML = `${key} <span style="font-size: 1rem;" class="badge bg-danger"><i class="fa-solid fa-temperature-three-quarters" style="color: #ffffff;"></i> ${Math.round(avgTemps)}°</span> <span style="font-size: 1rem;" class="badge bg-primary"><i class="fa-solid fa-droplet-percent" style="color: #ffffff;"></i> ${Math.round(avgHumids)}%</span>`;
+                        console.log(avgHumids, avgTemps)
+                    });
                 }
-            })
+            });
     </script>
     <style>
         * {
-            font-family: 'Segoe UI';
+            font-family: Arial;
         }
     </style>
 </body>
